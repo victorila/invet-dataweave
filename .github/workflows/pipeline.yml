@@ -20,10 +20,9 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Descarcare si Extragere DataWeave CLI Linux
+    - name: Descarcare DataWeave CLI Linux
       run: |
-        curl -L https://github.com/mulesoft/data-weave-cli/releases/download/v1.0.36/dw-1.0.36-Linux.zip -o dw.zip
-        unzip dw.zip
+        curl -L https://github.com/mulesoft/data-weave-cli/releases/download/v1.0.36/dw-1.0.36-Linux -o dw
         chmod +x dw
         sudo mv dw /usr/local/bin/dw
 
