@@ -20,11 +20,10 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Descarcare DataWeave CLI Linux
-      run: |
-        curl -L https://github.com/mulesoft/data-weave-cli/releases/download/v1.0.36/dw-1.0.36-Linux -o dw
-        chmod +x dw
-        sudo mv dw /usr/local/bin/dw
+    - name: Setup DataWeave CLI
+      uses: mulesoft-labs/setup-dataweave@v1
+      with:
+        dw-version: '1.0.36'
 
     - name: Executare si Validare Transformare DataWeave
       run: |
