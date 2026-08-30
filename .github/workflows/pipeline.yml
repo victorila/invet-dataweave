@@ -8,7 +8,7 @@ on:
 
 jobs:
   test-dataweave:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - name: Checkout cod
@@ -20,13 +20,12 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Instalare DataWeave CLI
+    - name: Instalare si Configurare DataWeave CLI pe Windows
+      shell: powershell
       run: |
-        wget -q https://github.com/mulesoft/data-weave-cli/releases/download/v1.0.36/dw-1.0.36-Linux.zip -O dw.zip
-        unzip -q dw.zip
-        chmod +x bin/dw
-        sudo mv bin/dw /usr/local/bin/dw
+        iwr -useb https://raw.githubusercontent.com/mulesoft-labs/data-weave-cli/main/scripts/install.ps1 | iex
 
     - name: Executare si Validare Transformare DataWeave
+      shell: powershell
       run: |
         dw run -i payload=input.json -f transformare.dwl
