@@ -20,10 +20,10 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Setup DataWeave CLI
-      uses: mulesoft-labs/setup-dataweave@v1
-      with:
-        dw-version: '1.0.36'
+    - name: Instalare DataWeave CLI
+      run: |
+        curl -sSL https://raw.githubusercontent.com/mulesoft/data-weave-cli/main/scripts/install.sh | bash
+        echo "$HOME/.dw/bin" >> $GITHUB_PATH
 
     - name: Executare si Validare Transformare DataWeave
       run: |
