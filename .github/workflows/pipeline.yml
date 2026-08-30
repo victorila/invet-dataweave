@@ -20,12 +20,9 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Instalare DataWeave CLI via SDKMAN
+    - name: Instalare DataWeave CLI via npm
       run: |
-        curl -s "https://get.sdkman.io" | bash
-        source "$HOME/.sdkman/bin/sdkman-init.sh"
-        sdk install dw
-        echo "$HOME/.sdkman/candidates/dw/current/bin" >> $GITHUB_PATH
+        npm install -g @mulesoft/data-weave-cli
 
     - name: Executare si Validare Transformare DataWeave
       run: |
