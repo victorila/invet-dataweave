@@ -20,9 +20,12 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Instalare DataWeave CLI prin Homebrew
+    - name: Instalare DataWeave CLI
       run: |
-        brew install mulesoft/tap/data-weave
+        curl -L https://github.com/mulesoft/data-weave-cli/releases/download/v1.0.36/dw-1.0.36-Linux.zip -o dw.zip
+        unzip dw.zip -d dw_extracted
+        chmod +x dw_extracted/bin/dw
+        sudo mv dw_extracted/bin/dw /usr/local/bin/dw
 
     - name: Executare si Validare Transformare DataWeave
       run: |
