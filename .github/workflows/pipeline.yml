@@ -30,12 +30,36 @@ jobs:
           chmod +x gradlew
           ./gradlew native-cli:installDist -x test
 
+      - name: Locate DataWeave executable
+        run: |
+          echo "=== Caut executabilul dw ==="
+
+          find "$HOME/dw-cli" -type f -name "dw" -o -type f -name "dw-cli" | head -20
+
+          echo "=== Structura build/install ==="
+          find "$HOME/dw-cli/native-cli/build/install" -maxdepth 5 -type f 2>/dev/null | head -50
+
       - name: Add DataWeave CLI to PATH
         run: |
-          echo "$HOME/dw-cli/native-cli/build/install/native-cli/bin" >> "$GITHUB_PATH"
+          DW_BIN=$(find "$HOME/dw-cli/native-cli/build/install" -type f -name "dw" | head -n 1)
 
-      - name: Check DataWeave
+          if [ -z "$DW_BIN" ]; then
+            echo "EROARE: Nu am găsit executabilul dw!"
+            echo "Conținutul build/install:"
+            find "$HOME/dw-cli/native-cli/build/install" -maxdepth 6 -print
+            exit 1
+          fi
+
+          echo "dw găsit la: $DW_BIN"
+
+          DW_DIR=$(dirname "$DW_BIN")
+          echo "Adaug în PATH: $DW_DIR"
+
+          echo "$DW_DIR" >> "$GITHUB_PATH"
+
+      - name: Test DataWeave CLI
         run: |
+          echo "PATH=$PATH"
           which dw
           dw --version
 
