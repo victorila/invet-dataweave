@@ -30,13 +30,8 @@ jobs:
           chmod +x gradlew
           ./gradlew native-cli:installDist -x test
           
-          # Cautam exact executabilul creat de task-ul native-cli:installDist
           DW_BIN_DIR=$(find $HOME/dw-cli/native-cli/build/install -type d -name "bin" | head -n 1)
           
-          echo "Folderul bin gasit este: $DW_BIN_DIR"
-          ls -la "$DW_BIN_DIR"
-          
-          # Daca binarul se numeste altfel decat 'dw', ii cream symlink
           if [ -f "$DW_BIN_DIR/native-cli" ]; then
             ln -s "$DW_BIN_DIR/native-cli" "$DW_BIN_DIR/dw"
           fi
@@ -51,4 +46,4 @@ jobs:
 
       - name: Executare si Validare Transformare DataWeave
         run: |
-          dw -i payload input.json -f transformare.dwl
+          dw -i input.json -f transformare.dwl
