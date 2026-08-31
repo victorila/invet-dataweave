@@ -24,22 +24,14 @@ jobs:
         run: |
           git clone https://github.com/mulesoft/data-weave-cli.git $HOME/dw-cli
 
-      - name: Compilare si Configurare Executabil
+      - name: Compilare si adaugare in PATH
         run: |
           cd $HOME/dw-cli
           chmod +x gradlew
           ./gradlew installDist -x test
           
-          # Cream folderul local pentru binare si identificam executabilul creat de Gradle
-          mkdir -p $HOME/.local/bin
-          
-          # Cautam executabilul generat si facem un link simbolic catre comanda 'dw'
-          BIN_FILE=$(find $HOME/dw-cli/build/install -type f \( -name "data-weave-cli" -o -name "dw" \) | head -n 1)
-          ln -s "$BIN_FILE" $HOME/.local/bin/dw
-          chmod +x $HOME/.local/bin/dw
-          
-          # Adaugam calea direct in PATH pentru toti pasii urmatori
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          # Adaugam calea exacta generata de sub-proiectul native-cli
+          echo "$HOME/dw-cli/native-cli/build/install/dw/bin" >> $GITHUB_PATH
 
       - name: Verificare instalare DataWeave
         run: dw --version
