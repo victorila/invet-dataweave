@@ -20,30 +20,26 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Clonare DataWeave CLI din Git
+      - name: Cache DataWeave Binary
+        id: cache-dw
+        uses: actions/cache@v4
+        with:
+          path: ~/dw-cli
+          key: dw-cli-binary-v2
+
+      - name: Clonare si Compilare DataWeave CLI (daca nu exista in cache)
+        if: steps.cache-dw.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/mulesoft/data-weave-cli.git $HOME/dw-cli
-
-      - name: Compilare si adaugare in PATH
-        run: |
           cd $HOME/dw-cli
           chmod +x gradlew
           ./gradlew native-cli:installDist -x test
-          
-          DW_BIN_DIR=$(find $HOME/dw-cli/native-cli/build/install -type d -name "bin" | head -n 1)
-          
-          if [ -f "$DW_BIN_DIR/native-cli" ]; then
-            ln -s "$DW_BIN_DIR/native-cli" "$DW_BIN_DIR/dw"
-          fi
-          if [ -f "$DW_BIN_DIR/data-weave-cli" ]; then
-            ln -s "$DW_BIN_DIR/data-weave-cli" "$DW_BIN_DIR/dw"
-          fi
-          
-          echo "$DW_BIN_DIR" >> $GITHUB_PATH
 
-      - name: Verificare instalare DataWeave
-        run: dw --version
+      - name: Configurare PATH
+        run: |
+          DW_BIN_DIR=$(find $HOME/dw-cli/native-cli/build/install -type d -name "bin" | head -n 1)
+          echo "$DW_BIN_DIR" >> $GITHUB_PATH
 
       - name: Executare si Validare Transformare DataWeave
         run: |
-          dw -i input.json -f transformare.dwl
+          dw --input payload input.json transformare.dwl
