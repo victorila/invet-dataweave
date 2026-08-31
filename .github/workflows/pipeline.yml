@@ -1,35 +1,53 @@
-name: Test DataWeave
+name: Pipeline CI/CD DataWeave CLI
 
 on:
-  workflow_dispatch:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 jobs:
-  test:
+  test-dataweave:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download DataWeave
+      - name: Checkout cod
+        uses: actions/checkout@v4
+
+      - name: Install DataWeave CLI
         shell: bash
         run: |
           set -e
 
+          mkdir -p "$HOME/.dw"
+
+          echo "Descarc DataWeave CLI 1.0.36..."
+
           curl -fL \
             "https://github.com/mulesoft/data-weave-cli/releases/download/v1.0.36/dw-1.0.36-Linux" \
-            -o "$HOME/dw"
+            -o "$HOME/dw.zip"
 
-          chmod +x "$HOME/dw"
+          echo "Dezarhivez DataWeave CLI..."
 
-          echo "=== FILE ==="
-          file "$HOME/dw"
+          unzip -q "$HOME/dw.zip" -d "$HOME/.dw"
 
-          echo "=== UNAME ==="
-          uname -a
+          echo "Continut ~/.dw:"
+          find "$HOME/.dw" -maxdepth 2 -type f -print
 
-          echo "=== ARCH ==="
-          uname -m
+          chmod +x "$HOME/.dw/bin/dw"
 
-          echo "=== SIZE ==="
-          ls -lh "$HOME/dw"
+          echo "$HOME/.dw/bin" >> "$GITHUB_PATH"
 
-          echo "=== EXECUTE ==="
-          "$HOME/dw" --version
+      - name: Verify DataWeave CLI
+        shell: bash
+        run: |
+          echo "Verific dw..."
+          which dw
+          dw --version
+
+      - name: Run DataWeave transformation
+        shell: bash
+        run: |
+          dw run \
+            -i payload="$GITHUB_WORKSPACE/input.json" \
+            "$GITHUB_WORKSPACE/transformare.dwl"
