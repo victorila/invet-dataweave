@@ -30,13 +30,18 @@ jobs:
           chmod +x gradlew
           ./gradlew native-cli:installDist -x test
 
-      - name: Configurare PATH si comanda dw
+      - name: Adaugare folder BIN complet in PATH
         run: |
-          # Gasim folderul exact de instalare creat de Gradle
-          BIN_PATH=$(find $HOME/dw-cli/native-cli/build/install -type d -name "bin" | head -n 1)
+          # Identificam folderul 'bin' generat de Gradle
+          BIN_DIR=$(find $HOME/dw-cli/native-cli/build/install -type d -name "bin" | head -n 1)
           
-          # Cream link simbolic pentru comanda dw in /usr/local/bin
-          sudo ln -s $BIN_PATH/* /usr/local/bin/
+          # Punctam executabilul spre comanda dw
+          cd "$BIN_DIR"
+          ORIGINAL_EXEC=$(ls)
+          ln -s "$ORIGINAL_EXEC" dw
+          
+          # Adaugam intregul folder bin in GITHUB_PATH (pastreaza legatura cu folderul ../lib)
+          echo "$BIN_DIR" >> $GITHUB_PATH
 
       - name: Testare comanda dw
         run: dw --version
