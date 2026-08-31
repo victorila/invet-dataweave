@@ -1,9 +1,18 @@
-- name: Check DataWeave release assets
-  shell: bash
-  run: |
-    set -e
+name: Check DataWeave
 
-    curl -fsSL \
-      -H "Accept: application/vnd.github+json" \
-      https://api.github.com/repos/mulesoft/data-weave-cli/releases/latest \
-      | jq -r '.assets[] | "\(.name) -> \(.browser_download_url)"'
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check DataWeave release assets
+        shell: bash
+        run: |
+          set -e
+          curl -fsSL \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/mulesoft/data-weave-cli/releases/latest \
+            | jq -r '.assets[] | "\(.name) -> \(.browser_download_url)"'
