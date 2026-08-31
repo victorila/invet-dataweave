@@ -14,55 +14,46 @@ jobs:
       - name: Checkout cod
         uses: actions/checkout@v4
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-
       - name: Clone DataWeave CLI
         run: |
           git clone https://github.com/mulesoft/data-weave-cli.git "$HOME/dw-cli"
+
+      - name: Setup GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          distribution: graalvm-community
+          java-version: "21"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build DataWeave CLI
         run: |
           cd "$HOME/dw-cli"
           chmod +x gradlew
-          ./gradlew native-cli:installDist -x test
+          ./gradlew native-cli:nativeCompile
 
-      - name: Locate DataWeave executable
+      - name: Verify DataWeave CLI
         run: |
-          echo "=== Caut executabilul dw ==="
+          DW="$HOME/dw-cli/native-cli/build/native/nativeCompile/dw"
 
-          find "$HOME/dw-cli" -type f -name "dw" -o -type f -name "dw-cli" | head -20
-
-          echo "=== Structura build/install ==="
-          find "$HOME/dw-cli/native-cli/build/install" -maxdepth 5 -type f 2>/dev/null | head -50
-
-      - name: Add DataWeave CLI to PATH
-        run: |
-          DW_BIN=$(find "$HOME/dw-cli/native-cli/build/install" -type f -name "dw" | head -n 1)
-
-          if [ -z "$DW_BIN" ]; then
-            echo "EROARE: Nu am găsit executabilul dw!"
-            echo "Conținutul build/install:"
-            find "$HOME/dw-cli/native-cli/build/install" -maxdepth 6 -print
+          if [ ! -x "$DW" ]; then
+            echo "ERROR: Executabilul dw nu a fost generat."
+            echo "Fisiere generate:"
+            find "$HOME/dw-cli/native-cli/build/native/nativeCompile" -maxdepth 2 -type f -print
             exit 1
           fi
 
-          echo "dw găsit la: $DW_BIN"
+          echo "dw găsit:"
+          "$DW" --version
 
-          DW_DIR=$(dirname "$DW_BIN")
-          echo "Adaug în PATH: $DW_DIR"
-
-          echo "$DW_DIR" >> "$GITHUB_PATH"
-
-      - name: Test DataWeave CLI
+      - name: Add dw to PATH
         run: |
-          echo "PATH=$PATH"
+          echo "$HOME/dw-cli/native-cli/build/native/nativeCompile" >> "$GITHUB_PATH"
+
+      - name: Test dw
+        run: |
           which dw
           dw --version
 
       - name: Run DataWeave transformation
         run: |
-          dw -i payload input.json -f transformare.dwl
+          dw run -i payload="$GITHUB_WORKSPACE/input.json" "$GITHUB_WORKSPACE/transformare.dwl"
