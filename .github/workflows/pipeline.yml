@@ -28,17 +28,23 @@ jobs:
         run: |
           cd $HOME/dw-cli
           chmod +x gradlew
-          ./gradlew installDist -x test
+          ./gradlew native-cli:installDist -x test
           
-          # Cautam folderul bin creat de sub-modulul native-cli
-          BIN_DIR=$(find $HOME/dw-cli -type d -path "*/build/install/*/bin" | head -n 1)
+          # Cautam exact executabilul creat de task-ul native-cli:installDist
+          DW_BIN_DIR=$(find $HOME/dw-cli/native-cli/build/install -type d -name "bin" | head -n 1)
           
-          # Facem legatura catre comanda dw daca executabilul se numeste diferit
-          if [ -f "$BIN_DIR/data-weave-cli" ]; then
-            ln -s "$BIN_DIR/data-weave-cli" "$BIN_DIR/dw"
+          echo "Folderul bin gasit este: $DW_BIN_DIR"
+          ls -la "$DW_BIN_DIR"
+          
+          # Daca binarul se numeste altfel decat 'dw', ii cream symlink
+          if [ -f "$DW_BIN_DIR/native-cli" ]; then
+            ln -s "$DW_BIN_DIR/native-cli" "$DW_BIN_DIR/dw"
+          fi
+          if [ -f "$DW_BIN_DIR/data-weave-cli" ]; then
+            ln -s "$DW_BIN_DIR/data-weave-cli" "$DW_BIN_DIR/dw"
           fi
           
-          echo "$BIN_DIR" >> $GITHUB_PATH
+          echo "$DW_BIN_DIR" >> $GITHUB_PATH
 
       - name: Verificare instalare DataWeave
         run: dw --version
