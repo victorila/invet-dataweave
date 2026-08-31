@@ -1,38 +1,35 @@
-name: Pipeline CI/CD DataWeave CLI
-
-on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
-
-jobs:
-  test-dataweave:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout cod
-        uses: actions/checkout@v4
-
       - name: Install DataWeave CLI
+        shell: bash
         run: |
-          VERSION="v1.0.36"
+          set -e
 
           mkdir -p "$HOME/.dw"
 
-          curl -L \
-            "https://github.com/mulesoft/data-weave-cli/releases/download/${VERSION}/dw-${VERSION}-linux-x64.zip" \
-            -o "$HOME/dw.zip"
+          echo "Obtinem ultimul release DataWeave CLI..."
+
+          API_URL="https://api.github.com/repos/mulesoft/data-weave-cli/releases/latest"
+
+          ASSET_URL=$(curl -fsSL \
+            -H "Accept: application/vnd.github+json" \
+            "$API_URL" \
+            | jq -r '.assets[] | select(.name | test("linux"; "i")) | .browser_download_url' \
+            | head -n 1)
+
+          if [ -z "$ASSET_URL" ] || [ "$ASSET_URL" = "null" ]; then
+            echo "ERROR: Nu am gasit asset-ul Linux."
+            exit 1
+          fi
+
+          echo "Asset găsit:"
+          echo "$ASSET_URL"
+
+          curl -fL "$ASSET_URL" -o "$HOME/dw.zip"
+
+          echo "Descarcare terminata:"
+          ls -lh "$HOME/dw.zip"
+
+          file "$HOME/dw.zip"
 
           unzip -q "$HOME/dw.zip" -d "$HOME/.dw"
 
           echo "$HOME/.dw/bin" >> "$GITHUB_PATH"
-
-      - name: Verify DataWeave CLI
-        run: |
-          which dw
-          dw --version
-
-      - name: Run DataWeave transformation
-        run: |
-          dw run -i payload="$GITHUB_WORKSPACE/input.json" "$GITHUB_WORKSPACE/transformare.dwl"
