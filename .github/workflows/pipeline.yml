@@ -31,9 +31,6 @@ jobs:
 
           unzip -q "$HOME/dw.zip" -d "$HOME/.dw"
 
-          echo "Continut ~/.dw:"
-          find "$HOME/.dw" -maxdepth 2 -type f -print
-
           chmod +x "$HOME/.dw/bin/dw"
 
           echo "$HOME/.dw/bin" >> "$GITHUB_PATH"
@@ -41,7 +38,6 @@ jobs:
       - name: Verify DataWeave CLI
         shell: bash
         run: |
-          echo "Verific dw..."
           which dw
           dw --version
 
@@ -50,4 +46,4 @@ jobs:
         run: |
           dw run \
             -i payload="$GITHUB_WORKSPACE/input.json" \
-            "$GITHUB_WORKSPACE/transformare.dwl"
+            -f "$GITHUB_WORKSPACE/transformare.dwl"
