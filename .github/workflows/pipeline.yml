@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout codul tau din Git
+      - name: Checkout cod din Git
         uses: actions/checkout@v4
 
       - name: Configurare Java JDK 17
@@ -20,26 +20,27 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Cache DataWeave Binary
-        id: cache-dw
-        uses: actions/cache@v4
-        with:
-          path: ~/dw-cli
-          key: dw-cli-binary-v2
-
-      - name: Clonare si Compilare DataWeave CLI (daca nu exista in cache)
-        if: steps.cache-dw.outputs.cache-hit != 'true'
+      - name: Clonare depozit DataWeave CLI
         run: |
           git clone https://github.com/mulesoft/data-weave-cli.git $HOME/dw-cli
+
+      - name: Compilare proiect cu Gradle
+        run: |
           cd $HOME/dw-cli
           chmod +x gradlew
           ./gradlew native-cli:installDist -x test
 
-      - name: Configurare PATH
+      - name: Configurare PATH si comanda dw
         run: |
-          DW_BIN_DIR=$(find $HOME/dw-cli/native-cli/build/install -type d -name "bin" | head -n 1)
-          echo "$DW_BIN_DIR" >> $GITHUB_PATH
+          # Gasim folderul exact de instalare creat de Gradle
+          BIN_PATH=$(find $HOME/dw-cli/native-cli/build/install -type d -name "bin" | head -n 1)
+          
+          # Cream link simbolic pentru comanda dw in /usr/local/bin
+          sudo ln -s $BIN_PATH/* /usr/local/bin/
+
+      - name: Testare comanda dw
+        run: dw --version
 
       - name: Executare si Validare Transformare DataWeave
         run: |
-          dw --input payload input.json transformare.dwl
+          dw -i payload input.json -f transformare.dwl
