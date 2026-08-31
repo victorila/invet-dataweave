@@ -1,45 +1,9 @@
-name: Pipeline CI/CD DataWeave CLI
+- name: Check DataWeave release assets
+  shell: bash
+  run: |
+    set -e
 
-on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
-
-jobs:
-  test-dataweave:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout cod
-        uses: actions/checkout@v4
-
-      - name: Install DataWeave CLI
-        shell: bash
-        run: |
-          set -e
-
-          mkdir -p "$HOME/.dw"
-
-          echo "Descarc DataWeave CLI 1.0.36..."
-
-          curl -fL \
-            "https://github.com/mulesoft/data-weave-cli/releases/download/v1.0.36/dw-1.0.36-Linux" \
-            -o "$HOME/.dw/dw"
-
-          chmod +x "$HOME/.dw/dw"
-
-          echo "$HOME/.dw" >> "$GITHUB_PATH"
-
-      - name: Verify DataWeave CLI
-        shell: bash
-        run: |
-          which dw
-          dw --version
-
-      - name: Run DataWeave transformation
-        shell: bash
-        run: |
-          dw run \
-            -i payload="$GITHUB_WORKSPACE/input.json" \
-            "$GITHUB_WORKSPACE/transformare.dwl"
+    curl -fsSL \
+      -H "Accept: application/vnd.github+json" \
+      https://api.github.com/repos/mulesoft/data-weave-cli/releases/latest \
+      | jq -r '.assets[] | "\(.name) -> \(.browser_download_url)"'
