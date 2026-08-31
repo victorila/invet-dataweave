@@ -14,42 +14,21 @@ jobs:
       - name: Checkout cod
         uses: actions/checkout@v4
 
-      - name: Clone DataWeave CLI
+      - name: Install DataWeave CLI
         run: |
-          git clone https://github.com/mulesoft/data-weave-cli.git "$HOME/dw-cli"
+          VERSION="v1.0.36"
 
-      - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@v1
-        with:
-          distribution: graalvm-community
-          java-version: "21"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          mkdir -p "$HOME/.dw"
 
-      - name: Build DataWeave CLI
-        run: |
-          cd "$HOME/dw-cli"
-          chmod +x gradlew
-          ./gradlew native-cli:nativeCompile
+          curl -L \
+            "https://github.com/mulesoft/data-weave-cli/releases/download/${VERSION}/dw-${VERSION}-linux-x64.zip" \
+            -o "$HOME/dw.zip"
+
+          unzip -q "$HOME/dw.zip" -d "$HOME/.dw"
+
+          echo "$HOME/.dw/bin" >> "$GITHUB_PATH"
 
       - name: Verify DataWeave CLI
-        run: |
-          DW="$HOME/dw-cli/native-cli/build/native/nativeCompile/dw"
-
-          if [ ! -x "$DW" ]; then
-            echo "ERROR: Executabilul dw nu a fost generat."
-            echo "Fisiere generate:"
-            find "$HOME/dw-cli/native-cli/build/native/nativeCompile" -maxdepth 2 -type f -print
-            exit 1
-          fi
-
-          echo "dw găsit:"
-          "$DW" --version
-
-      - name: Add dw to PATH
-        run: |
-          echo "$HOME/dw-cli/native-cli/build/native/nativeCompile" >> "$GITHUB_PATH"
-
-      - name: Test dw
         run: |
           which dw
           dw --version
